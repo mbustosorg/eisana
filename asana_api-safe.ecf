@@ -17,7 +17,7 @@
 		<library name="time" location="$ISE_LIBRARY\library\time\time-safe.ecf"/>
 		<cluster name="asana_api_development" location=".\src" recursive="true"/>
 	</target>
-	<target name="test_asana_api" extends="asana_api_development">
+	<target name="test_asana_api" extends="asana_api">
 		<root class="ANY" feature="default_create"/>
 		<setting name="console_application" value="true"/>
 		<precompile name="base_pre" location="$ISE_PRECOMP\base-safe.ecf"/>
