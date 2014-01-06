@@ -4,7 +4,7 @@ note
 ]"
 	date: "$Date: $"
 	revision: "$Revision: $"
-	
+
 class
 	ASANA
 
@@ -13,19 +13,34 @@ create
 
 feature {NONE} -- Implementation
 
-	make
+	make (a_api_key: like api_key)
 			-- Create the API session
 		do
-			create last_error.make_empty
+			api_key := a_api_key
+--			create last_error.make_empty
 		end
 
 feature -- Access
 
-	last_error: ASANA_ERROR
+	api_key: READABLE_STRING_8
+
+	last_error: detachable ASANA_ERROR
 			-- Status of the last API call
 
+	is_success: BOOLEAN
+			-- Last operation succeed without any error?
+		do
+			Result := last_error = Void
+		end
+
 feature -- Basic operations
-	
+
+	reset_error
+			-- Reset `last_error'.
+		do
+			last_error := Void
+		end
+
 	new_task (task: ASANA_TASK): ASANA_TASK
 			-- Create a task using the `task' specification
 		local
@@ -33,13 +48,14 @@ feature -- Basic operations
 			resp: HTTP_CLIENT_RESPONSE
 			parser: JSON_PARSER
 		do
+			reset_error
 			json_post := "{ %"data%": {%"workspace%":" + task.workspace.id.out + ","
 			json_post.append ("%"name%":%"" + task.name + "%",")
 			json_post.append ("%"assignee%":" + task.assignee.id.out + "}}")
 			resp := session.post ("/tasks", request_context, json_post)
 			set_last_error (resp)
 			create Result.make_empty
-			if last_error.is_success and then attached resp.body as body then
+			if is_success and then attached resp.body as body then
 				create parser.make_parser (body)
 				if parser.is_parsed and attached parser.parse_object as j_o then
 					if attached {JSON_OBJECT} j_o.item (create {JSON_STRING}.make_json ("data")) as task_object then
@@ -56,6 +72,7 @@ feature -- Basic operations
 		local
 			resp: HTTP_CLIENT_RESPONSE
 		do
+			reset_error
 			resp := session.delete ("/tasks/" + task.id.out, request_context)
 			set_last_error (resp)
 		end
@@ -67,12 +84,13 @@ feature -- Basic operations
 			resp: HTTP_CLIENT_RESPONSE
 			parser: JSON_PARSER
 		do
+			reset_error
 			json_post := "{ %"data%": {%"workspace%":" + workspace.id.out + ","
 			json_post.append ("%"name%":%"" + name + "%"}}")
 			resp := session.post ("/tags", request_context, json_post)
 			set_last_error (resp)
 			create Result.make_empty
-			if last_error.is_success and then attached resp.body as body then
+			if is_success and then attached resp.body as body then
 				create parser.make_parser (body)
 				if parser.is_parsed and attached parser.parse_object as j_o then
 					if attached {JSON_OBJECT} j_o.item (create {JSON_STRING}.make_json ("data")) as tag_object then
@@ -91,11 +109,12 @@ feature -- Basic operations
 			json_post: STRING
 			resp: HTTP_CLIENT_RESPONSE
 		do
+			reset_error
 			json_post := "{ %"data%": {%"tag%":" + tag.id.out + "}}"
 			resp := session.post ("/tasks/" + task.id.out + "/addTag", request_context, json_post)
 			set_last_error (resp)
 		end
-	
+
 	remove_tag (tag: ASANA_TAG; task: ASANA_TASK)
 			-- Remove tag `tag' from `task'
 		require
@@ -105,6 +124,7 @@ feature -- Basic operations
 			json_post: STRING
 			resp: HTTP_CLIENT_RESPONSE
 		do
+			reset_error
 			json_post := "{ %"data%": {%"tag%":" + tag.id.out + "}}"
 			resp := session.post ("/tasks/" + task.id.out + "/removeTag", request_context, json_post)
 			set_last_error (resp)
@@ -117,13 +137,14 @@ feature -- Basic operations
 			resp: HTTP_CLIENT_RESPONSE
 			parser: JSON_PARSER
 		do
+			reset_error
 			json_post := "{ %"data%": {%"workspace%":" + project.workspace.id.out + ","
 			json_post.append ("%"name%":%"" + project.name + "%",")
 			json_post.append ("%"notes%":%"" + project.notes + "%"}}")
 			resp := session.post ("/tags", request_context, json_post)
 			set_last_error (resp)
 			create Result.make_empty
-			if last_error.is_success and then attached resp.body as body then
+			if is_success and then attached resp.body as body then
 				create parser.make_parser (body)
 				if parser.is_parsed and attached parser.parse_object as j_o then
 					if attached {JSON_OBJECT} j_o.item (create {JSON_STRING}.make_json ("data")) as project_object then
@@ -132,7 +153,7 @@ feature -- Basic operations
 				end
 			end
 		end
-	
+
 	delete_project (project: ASANA_PROJECT)
 			-- Delete the project matching the `project' specification
 		require
@@ -140,18 +161,19 @@ feature -- Basic operations
 		local
 			resp: HTTP_CLIENT_RESPONSE
 		do
+			reset_error
 			resp := session.delete ("/projects/" + project.id.out, request_context)
 			set_last_error (resp)
 		end
-	
+
 feature -- Query
-	
+
 	task_by_id (id: INTEGER): ASANA_TASK
 			-- Task object for `id'
 		do
 			create Result.make_empty
 		end
-	
+
 	tasks (workspace: ASANA_WORKSPACE; assignee: ASANA_USER): ARRAY [ASANA_TASK]
 			-- Collection of tasks for `assignee' in `workspace'
 		local
@@ -159,6 +181,7 @@ feature -- Query
 			parser: JSON_PARSER
 			task: ASANA_TASK
 		do
+			reset_error
 			resp := session.get ("/tasks?workspace=" + workspace.id.out + "&assignee=" + assignee.query_name, request_context)
 			set_last_error (resp)
 			create Result.make_empty
@@ -187,7 +210,7 @@ feature -- Query
 			create Result.make_empty
 			across user_for_tasks.workspaces as workspace
 	        loop
-				if last_error.is_success then
+				if is_success then
 					task_list := tasks (workspace.item, user_for_tasks)
 					from
 						i := 1
@@ -209,6 +232,7 @@ feature -- Query
 			resp: HTTP_CLIENT_RESPONSE
 			parser: JSON_PARSER
 		do
+			reset_error
 			if id = 0 then
 				resp := session.get ("/users/me", request_context)
 			else
@@ -225,7 +249,7 @@ feature -- Query
 				end
 			end
 		end
-	
+
 	users: ARRAY [ASANA_USER]
 			-- Collection of users in this application
 		local
@@ -234,6 +258,7 @@ feature -- Query
 			parser: JSON_PARSER
 			i: INTEGER
 		do
+			reset_error
 			resp := session.get ("/users?opt_fields=name,email,workspaces", request_context)
 			set_last_error (resp)
 			create Result.make_empty
@@ -250,8 +275,8 @@ feature -- Query
 								create user.make_from_json (user_object)
 								Result.force (user, Result.count + 1)
 								print (user.debug_output + "%N")
-								user.workspaces.do_all (agent (ws: ASANA_WORKSPACE) 
-		                                                  do 
+								user.workspaces.do_all (agent (ws: ASANA_WORKSPACE)
+		                                                  do
 															  print (ws.debug_output + "%N")
 														  end)
 							end
@@ -264,7 +289,7 @@ feature -- Query
 
 	tasks_with_tag (tag: ASANA_TAG): ARRAY [ASANA_TASK]
 			-- Collection of tasks with tag `tag'.
-			-- Resulting tasks are not complete and should be queried for 
+			-- Resulting tasks are not complete and should be queried for
 			-- full task record.
 		require
 			has_id: tag.id > 0
@@ -274,10 +299,11 @@ feature -- Query
 			task: ASANA_TASK
 			i: INTEGER
 		do
+			reset_error
 			resp := session.get ("/tags/" + tag.id.out + "/tasks", request_context)
 			set_last_error (resp)
 			create Result.make_empty
-			if last_error.is_success and then attached resp.body as body then
+			if is_success and then attached resp.body as body then
 				create parser.make_parser (body)
 				if parser.is_parsed and attached parser.parse_object as j_o then
 					if attached {JSON_ARRAY} j_o.item (create {JSON_STRING}.make_json ("data")) as task_objects then
@@ -296,7 +322,7 @@ feature -- Query
 				end
 			end
 		end
-	
+
 feature {NONE} -- Implementation
 
 	set_last_error (resp: HTTP_CLIENT_RESPONSE)
@@ -308,12 +334,10 @@ feature {NONE} -- Implementation
 				else
 					create last_error.make_from_string (0, "UNKNOWN ERROR")
 				end
-			else
-				create last_error.make_success
+--			else
+--				create last_error.make_success
 			end
 		end
-	
-	api_key: STRING = "f3V0uao.OabxNvzHFnQjvjmJKTCVLgJm"
 
 	session: HTTP_CLIENT_SESSION
 			-- HTTP Session for the API application
@@ -334,8 +358,8 @@ feature {NONE} -- Implementation
 			Result.headers.put ("application/json", "Content-Type")
 			Result.set_credentials_required (True)
 		end
-	
+
 end
 
-				  	
+
 
