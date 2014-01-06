@@ -16,8 +16,6 @@ feature {NONE} -- Creation
 
 	make_from_json (tag: JSON_OBJECT)
 			-- Create the tag object from `tag'
-		local
-			i: INTEGER
 		do
 			make_empty
 			json := tag

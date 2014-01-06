@@ -48,7 +48,7 @@ feature {NONE} -- Creation
 			create modified_at.make_now
 			create due_on.make_now
 			create projects.make_empty
-			create assignee_status.make_empty
+			--create assignee_status.make_empty
 			--create parent.make_empty
 			create workspace.make_empty
 			create json.make
@@ -56,35 +56,35 @@ feature {NONE} -- Creation
 
 feature -- Element modification
 
-	set_assignee (new_user: ASANA_USER)
-			-- Set `assignee' to `new_user'
+	set_assignee (value: ASANA_USER)
+			-- Set `assignee' to `value'
 		do
-			assignee := new_user
+			assignee := value
 		end
 
-	set_name (new_name: STRING)
-			-- Set `name' to 'new_name'
+	set_name (value: STRING)
+			-- Set `name' to `value'
 		do
-			name := new_name
+			name := value
 		end
 
-	set_notes (new_notes: STRING)
-			-- Set `notes' to `new_notes'
+	set_notes (value: STRING)
+			-- Set `notes' to `value'
 		do
-			notes := new_notes
+			notes := value
 		end
 
-	set_workspace (new_workspace: ASANA_WORKSPACE)
-			-- Set `workspace' to `new_workspace'
+	set_workspace (value: ASANA_WORKSPACE)
+			-- Set `workspace' to `value'
 		do
-			workspace := new_workspace
+			workspace := value
 		end
 			
 feature -- Access
 
 	id: INTEGER_64
 	assignee: ASANA_USER assign set_assignee
-	assignee_status: ASANA_ASSIGNEE_STATUS
+	--assignee_status: ASANA_ASSIGNEE_STATUS
 	created_at: DATE_TIME
 	completed: BOOLEAN
 	completed_at: DATE_TIME

@@ -100,7 +100,6 @@ feature -- Test routines
 		local
 			user: ASANA_USER
 			project: ASANA_PROJECT
-			task: ASANA_TASK
 		do
 			user := asana.user_from_id (0)
 			assert ("me found", asana.last_error.is_success)
