@@ -1,7 +1,7 @@
 note
     description: "[
                   Main API object for ASANA
-]"
+				]"
 	date: "$Date: $"
 	revision: "$Revision: $"
 
@@ -17,7 +17,6 @@ feature {NONE} -- Implementation
 			-- Create the API session
 		do
 			api_key := a_api_key
---			create last_error.make_empty
 		end
 
 feature -- Access
@@ -52,8 +51,8 @@ feature -- Basic operations
 			json_post := "{ %"data%": {%"workspace%":" + task.workspace.id.out + ","
 			json_post.append ("%"name%":%"" + task.name + "%",")
 			json_post.append ("%"assignee%":" + task.assignee.id.out + "}}")
-			resp := session.post ("/tasks", request_context, json_post)
-			set_last_error (resp)
+			resp := session.post ("/tasks", new_request_context, json_post)
+			analyze_response (resp)
 			create Result.make_empty
 			if is_success and then attached resp.body as body then
 				create parser.make_parser (body)
@@ -73,8 +72,8 @@ feature -- Basic operations
 			resp: HTTP_CLIENT_RESPONSE
 		do
 			reset_error
-			resp := session.delete ("/tasks/" + task.id.out, request_context)
-			set_last_error (resp)
+			resp := session.delete ("/tasks/" + task.id.out, new_request_context)
+			analyze_response (resp)
 		end
 
 	new_tag (name: STRING; workspace: ASANA_WORKSPACE): ASANA_TAG
@@ -87,8 +86,8 @@ feature -- Basic operations
 			reset_error
 			json_post := "{ %"data%": {%"workspace%":" + workspace.id.out + ","
 			json_post.append ("%"name%":%"" + name + "%"}}")
-			resp := session.post ("/tags", request_context, json_post)
-			set_last_error (resp)
+			resp := session.post ("/tags", new_request_context, json_post)
+			analyze_response (resp)
 			create Result.make_empty
 			if is_success and then attached resp.body as body then
 				create parser.make_parser (body)
@@ -111,8 +110,8 @@ feature -- Basic operations
 		do
 			reset_error
 			json_post := "{ %"data%": {%"tag%":" + tag.id.out + "}}"
-			resp := session.post ("/tasks/" + task.id.out + "/addTag", request_context, json_post)
-			set_last_error (resp)
+			resp := session.post ("/tasks/" + task.id.out + "/addTag", new_request_context, json_post)
+			analyze_response (resp)
 		end
 
 	remove_tag (tag: ASANA_TAG; task: ASANA_TASK)
@@ -126,8 +125,8 @@ feature -- Basic operations
 		do
 			reset_error
 			json_post := "{ %"data%": {%"tag%":" + tag.id.out + "}}"
-			resp := session.post ("/tasks/" + task.id.out + "/removeTag", request_context, json_post)
-			set_last_error (resp)
+			resp := session.post ("/tasks/" + task.id.out + "/removeTag", new_request_context, json_post)
+			analyze_response (resp)
 		end
 
 	new_project (project: ASANA_PROJECT): ASANA_PROJECT
@@ -141,8 +140,8 @@ feature -- Basic operations
 			json_post := "{ %"data%": {%"workspace%":" + project.workspace.id.out + ","
 			json_post.append ("%"name%":%"" + project.name + "%",")
 			json_post.append ("%"notes%":%"" + project.notes + "%"}}")
-			resp := session.post ("/tags", request_context, json_post)
-			set_last_error (resp)
+			resp := session.post ("/projects", new_request_context, json_post)
+			analyze_response (resp)
 			create Result.make_empty
 			if is_success and then attached resp.body as body then
 				create parser.make_parser (body)
@@ -162,8 +161,8 @@ feature -- Basic operations
 			resp: HTTP_CLIENT_RESPONSE
 		do
 			reset_error
-			resp := session.delete ("/projects/" + project.id.out, request_context)
-			set_last_error (resp)
+			resp := session.delete ("/projects/" + project.id.out, new_request_context)
+			analyze_response (resp)
 		end
 
 feature -- Query
@@ -182,8 +181,8 @@ feature -- Query
 			task: ASANA_TASK
 		do
 			reset_error
-			resp := session.get ("/tasks?workspace=" + workspace.id.out + "&assignee=" + assignee.query_name, request_context)
-			set_last_error (resp)
+			resp := session.get ("/tasks?workspace=" + workspace.id.out + "&assignee=" + assignee.query_name, new_request_context)
+			analyze_response (resp)
 			create Result.make_empty
 			if attached resp.body as body then
 				create parser.make_parser (body)
@@ -234,11 +233,11 @@ feature -- Query
 		do
 			reset_error
 			if id = 0 then
-				resp := session.get ("/users/me", request_context)
+				resp := session.get ("/users/me", new_request_context)
 			else
-				resp := session.get ("/users/" + id.out, request_context)
+				resp := session.get ("/users/" + id.out, new_request_context)
 			end
-			set_last_error (resp)
+			analyze_response (resp)
 			create Result.make_empty
 			if attached resp.body as body then
 				create parser.make_parser (body)
@@ -259,8 +258,8 @@ feature -- Query
 			i: INTEGER
 		do
 			reset_error
-			resp := session.get ("/users?opt_fields=name,email,workspaces", request_context)
-			set_last_error (resp)
+			resp := session.get ("/users?opt_fields=name,email,workspaces", new_request_context)
+			analyze_response (resp)
 			create Result.make_empty
 			if attached resp.body as body then
 				create parser.make_parser (body)
@@ -300,8 +299,8 @@ feature -- Query
 			i: INTEGER
 		do
 			reset_error
-			resp := session.get ("/tags/" + tag.id.out + "/tasks", request_context)
-			set_last_error (resp)
+			resp := session.get ("/tags/" + tag.id.out + "/tasks", new_request_context)
+			analyze_response (resp)
 			create Result.make_empty
 			if is_success and then attached resp.body as body then
 				create parser.make_parser (body)
@@ -325,8 +324,9 @@ feature -- Query
 
 feature {NONE} -- Implementation
 
-	set_last_error (resp: HTTP_CLIENT_RESPONSE)
-			-- Set the `last_error' status using `resp'
+	analyze_response (resp: HTTP_CLIENT_RESPONSE)
+			-- Set the `last_error' status using `resp' if an error occurred
+			-- otherwise make sure `is_success' is True
 		do
 			if resp.status > 299 or resp.status = 0 then
 				if attached resp.body as resp_body then
@@ -334,8 +334,8 @@ feature {NONE} -- Implementation
 				else
 					create last_error.make_from_string (0, "UNKNOWN ERROR")
 				end
---			else
---				create last_error.make_success
+			else
+				last_error := Void
 			end
 		end
 
@@ -343,17 +343,25 @@ feature {NONE} -- Implementation
 			-- HTTP Session for the API application
 		local
 			h: LIBCURL_HTTP_CLIENT
-		once
-			create h.make
-			Result := h.new_session ("https://app.asana.com/api/1.0")
-			Result.set_credentials (api_key, "")
-			Result.set_basic_auth_type
-			Result.set_is_insecure (True)
+			l_session: like internal_session
+		do
+			l_session := internal_session
+			if l_session = Void then
+				create h.make
+				l_session := h.new_session ("https://app.asana.com/api/1.0")
+				l_session.set_credentials (api_key, "")
+				l_session.set_basic_auth_type
+				l_session.set_is_insecure (True)
+			end
+			Result := l_session
 		end
 
-	request_context: HTTP_CLIENT_REQUEST_CONTEXT
+
+	internal_session: detachable like session
+
+	new_request_context: HTTP_CLIENT_REQUEST_CONTEXT
 			-- Request context for the API application
-		once
+		do
 			create Result.make
 			Result.headers.put ("application/json", "Content-Type")
 			Result.set_credentials_required (True)
