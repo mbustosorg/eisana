@@ -4,43 +4,39 @@ note
 ]"
 	date: "$Date: $"
 	revision: "$Revision: $"
+	EIS: "name=asana_team", "src=http://developers.asana.com/documentation/#teams", "protocol=uri"
 
 class
 	ASANA_TEAM
 
 create
-	make_empty,
-	make_from_json
-
+	make_empty
+	
 feature {NONE} -- Creation
 
-	make_from_json (project: JSON_OBJECT)
-			-- Create the project object from `project'
-		do
-			make_empty
-			json := project
-			if attached {JSON_NUMBER} json.item ("id") as json_number then
-				id := json_number.item.to_integer_64
-			end
-			if attached {JSON_STRING} json.item ("name") as json_string then
-				name := json_string.item
-			end
-		end
-	
 	make_empty
-			-- Create an empty project object
+			-- Create an empty team object
 		do
-			name := ""
-			create json.make
+			create name.make_empty
 		end
 	
 feature -- Access
 
-	id: INTEGER_64
-	name: STRING
+	id: INTEGER_64 assign set_id
+	name: UC_UTF8_STRING assign set_name
 
-feature {NONE} -- Implementation
+feature -- Element modification
 
-	json: JSON_OBJECT
+	set_id (value: INTEGER_64)
+			-- Set `id' to `value'
+		do
+			id := value
+		end
+
+	set_name (value: UC_UTF8_STRING)
+			-- Set `name' to `value'
+		do
+			name := value
+		end
 	
 end

@@ -4,72 +4,58 @@ note
 ]"
 	date: "$Date: $"
 	revision: "$Revision: $"
+	EIS: "name=asana_project", "src=http://developers.asana.com/documentation/#projects", "protocol=uri"
 
 class
 	ASANA_PROJECT
 
 create
-	make_empty,
-	make_from_json
+	make_empty
 
 feature {NONE} -- Creation
 
-	make_from_json (project: JSON_OBJECT)
-			-- Create the project object from `project'
-		do
-			make_empty
-			json := project
-			if attached {JSON_NUMBER} json.item ("id") as json_number then
-				id := json_number.item.to_integer_64
-			end
-			if attached {JSON_STRING} json.item ("name") as json_string then
-				name := json_string.item
-			end
-			if attached {JSON_STRING} json.item ("notes") as json_string then
-				notes := json_string.item
-			end
-			if attached {JSON_OBJECT} json.item ("workspace") as workspace_object then
-				create workspace.make_from_json (workspace_object)
-			end
-		end
-	
 	make_empty
 			-- Create an empty project object
 		do
-			name := ""
-			color := ""
-			notes := ""
+			create name.make_empty
+			create color.make_empty
+			create notes.make_empty
 			create modified_at.make_now
 			create created_at.make_now
 			
-			create followers.make_empty
+			create followers.make (0)
 			create workspace.make_empty
 			create team.make_empty
-			create json.make
 		end
 	
 feature -- Access
 
-	id: INTEGER_64
+	id: INTEGER_64 assign set_id
 	archived: BOOLEAN
 	created_at: DATE_TIME
-	followers: ARRAY [ASANA_USER]
+	followers: ARRAYED_LIST [ASANA_USER]
 	modified_at: DATE_TIME
-	name: STRING assign set_name
-	color: STRING
-	notes: STRING assign set_notes
+	name: UC_UTF8_STRING assign set_name
+	color: UC_UTF8_STRING
+	notes: UC_UTF8_STRING assign set_notes
 	workspace: ASANA_WORKSPACE assign set_workspace
 	team: ASANA_TEAM
 
 feature -- Element modification
 
-	set_name (value: STRING)
+	set_id (value: INTEGER_64)
+			-- Set `id' to `value'
+		do
+			id := value
+		end
+	
+	set_name (value: UC_UTF8_STRING)
 			-- Set `name' to `value'
 		do
 			name := value
 		end
 	
-	set_notes (value: STRING)
+	set_notes (value: UC_UTF8_STRING)
 			-- Set `notes' to `value'
 		do
 			notes := value
@@ -80,10 +66,6 @@ feature -- Element modification
 		do
 			workspace := value
 		end
-	
-feature {NONE} -- Implementation
-
-	json: JSON_OBJECT
 	
 end
 
