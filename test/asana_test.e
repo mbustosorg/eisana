@@ -26,8 +26,8 @@ feature -- Test routines
 		do
 			create Result.make_empty
 			Result.set_assignee (u)
-			Result.set_name (a_name)
-			Result.set_notes ("notes for task " + a_name)
+			Result.set_name (create {UC_UTF8_STRING}.make_from_string (a_name))
+			Result.set_notes (create {UC_UTF8_STRING}.make_from_string ("notes for task " + a_name))
 			Result.set_workspace (u.workspaces [1])
 			Result := asana.new_task (Result)
 		end
@@ -54,7 +54,7 @@ feature -- Test routines
 		note
 			testing:  "covers/{ASANA_TASK}"
 		local
-			tasks: ARRAY [ASANA_TASK]
+			tasks: ARRAYED_LIST [ASANA_TASK]
 			user: ASANA_USER
 			task: ASANA_TASK
 		do
@@ -64,8 +64,9 @@ feature -- Test routines
 			if tasks.is_empty then
 				task := new_task (user, "_testing_ task deletion")
 				assert ("task %"" + task.name + "%" created", asana.is_success)
-				tasks.force (task, 1)
+				tasks.extend (task)
 			end
+			tasks := asana.tasks_by_user (user)
 			assert ("tasks available", not tasks.is_empty)
 			across tasks as ic loop
 				task := ic.item
@@ -93,8 +94,8 @@ feature -- Test routines
 			-- Create a task
 			create task.make_empty
 			task.set_assignee (user)
-			task.set_name ("name tag test")
-			task.set_notes ("node tag test")
+			task.set_name (create {UC_UTF8_STRING}.make_from_string ("name tag test"))
+			task.set_notes (create {UC_UTF8_STRING}.make_from_string ("node tag test"))
 			task.set_workspace (user.workspaces [1])
 			task := asana.new_task (task)
 			assert ("task tag test created", asana.is_success)
@@ -121,8 +122,8 @@ feature -- Test routines
 			assert ("me found", asana.is_success)
 			-- Create a project
 			create project.make_empty
-			project.set_name ("_testing_ project name")
-			project.set_notes ("_testing_ project notes")
+			project.set_name (create {UC_UTF8_STRING}.make_from_string ("_testing_ project name"))
+			project.set_notes (create {UC_UTF8_STRING}.make_from_string ("_testing_ project notes"))
 			project.set_workspace (user.workspaces[1])
 			project := asana.new_project (project)
 			assert ("project created", asana.is_success)
