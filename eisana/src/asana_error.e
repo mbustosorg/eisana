@@ -4,7 +4,8 @@ note
 ]"
 	date: "$Date: $"
 	revision: "$Revision: $"
-	
+	EIS: "name=Errors", "src=http://developers.asana.com/documentation/#Errors", "protocol=uri"
+
 class
 	ASANA_ERROR
 
@@ -54,7 +55,7 @@ feature {NONE} -- Creation
 			make_empty
 			status := 200
 		end
-	
+
 	make_empty
 			-- Create the empty error object
 		do
@@ -62,7 +63,7 @@ feature {NONE} -- Creation
 			phrase := ""
 			create json.make
 		end
-	
+
 feature -- Query
 
 	is_success: BOOLEAN
@@ -70,14 +71,14 @@ feature -- Query
 		do
 			Result := status > 0 and status < 300
 		end
-	
+
 feature -- Access
 
 	message: STRING
 	phrase: STRING
 
 	status: INTEGER
-	
+
 	documentation: STRING = "[
 200	Success. If data was requested, it will be available in the data field at the top level of the response body.
 201	Success (for object creation). Its information is available in the data field at the top level of the response body. The API URL where the object can be retrieved is also returned in the Location header of the response.
@@ -85,7 +86,7 @@ feature -- Access
 401	No authorization. A valid API key was not provided with the request, so the API could not associate a user with the request.
 403	Forbidden. The API key and request syntax was valid but the server is refusing to complete the request. This can happen if you try to read or write to objects or properties that the user does not have access to.
 404	Not found. Either the request method and path supplied do not specify a known action in the API, or the object specified by the request does not exist.
-429	Rate Limit Enforced. Asana imposes a limit on the rate at which users can make requests. The limit is currently around 100 requests per minute, but this is not guaranteed: it may vary with server load, and we may change it in the future. The Retry-After response header will specify the number of seconds until the user can make another request. Clients sending large bursts of requests should handle this error code to retry after the delay. 
+429	Rate Limit Enforced. Asana imposes a limit on the rate at which users can make requests. The limit is currently around 100 requests per minute, but this is not guaranteed: it may vary with server load, and we may change it in the future. The Retry-After response header will specify the number of seconds until the user can make another request. Clients sending large bursts of requests should handle this error code to retry after the delay.
 
 Rate limits are important to prevent abuse and keep the service available to everyone. If you definitely need a higher rate limit for your application, please contact developer support and we will look into granting an exception.
 500	Server error. There was a problem on Asana's end.
@@ -94,6 +95,6 @@ Rate limits are important to prevent abuse and keep the service available to eve
 feature {NONE} -- Implementation
 
  	json: JSON_OBJECT
-	
+
 end
 

@@ -11,7 +11,7 @@ class
 
 create
 	make_empty
-	
+
 feature {NONE} -- Creation
 
 	make_empty
@@ -19,12 +19,14 @@ feature {NONE} -- Creation
 		do
 			create name.make_empty
 		end
-	
+
 feature -- Access
 
 	id: INTEGER_64 assign set_id
-	name: UC_UTF8_STRING assign set_name
 
+	name: UC_UTF8_STRING assign set_name
+		-- Name of the team.
+		
 feature -- Element modification
 
 	set_id (value: INTEGER_64)
@@ -38,5 +40,5 @@ feature -- Element modification
 		do
 			name := value
 		end
-	
+
 end

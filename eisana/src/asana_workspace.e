@@ -36,12 +36,13 @@ feature -- Element modification
 		do
 			name := value
 		end
-	
+
 feature -- Basic operations
-	
+
 	id: INTEGER_64 assign set_id
 	name: UC_UTF8_STRING assign set_name
-	
+		-- Name of the workspace.
+
 feature -- Status report
 
 	debug_output: READABLE_STRING_GENERAL
@@ -50,5 +51,5 @@ feature -- Status report
 			Result := "ID: " + id.out + ", " +
 				"NAME: " + name.out
 		end
-	
+
 end
