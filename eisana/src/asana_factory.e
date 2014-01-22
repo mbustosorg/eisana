@@ -8,7 +8,7 @@ note
 deferred class
 	ASANA_FACTORY
 
-feature -- Access
+feature -- Factory
 
 	users_from_string (response: detachable READABLE_STRING_8): ARRAYED_LIST [ASANA_USER]
 			-- Collection of users from `response'
@@ -24,7 +24,7 @@ feature -- Access
 			-- Collection of tasks from `response'
 		deferred
 		end
-	
+
 	task_from_string (response: detachable READABLE_STRING_8): ASANA_TASK
 			-- Task from `response'
 		deferred

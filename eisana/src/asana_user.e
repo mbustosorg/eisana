@@ -25,7 +25,7 @@ feature {NONE} -- Creation
 			create photo.make_empty
 			create workspaces.make (0)
 		end
-	
+
 feature -- Access
 
 	query_name: STRING
@@ -37,12 +37,23 @@ feature -- Access
 				Result := id.out
 			end
 		end
-	
+
 	id: INTEGER_64 assign set_id
 	email: UC_UTF8_STRING assign set_email
+		-- The user's email address.
+
 	name: UC_UTF8_STRING assign set_name
+		-- The user's name
+
 	photo: UC_UTF8_STRING assign set_photo
+		-- The user's photo.
+		-- From the spec, it could be a map or collection of avartar's
+		-- but could also be null
+		-- Why not define it as detachable photo?
+
+
 	workspaces: ARRAYED_LIST [ASANA_WORKSPACE]
+		-- Workspaces his user may access.
 
 feature -- Element modification
 
@@ -51,25 +62,25 @@ feature -- Element modification
 		do
 			id := value
 		end
-	
+
 	set_email (value: UC_UTF8_STRING)
 			-- Set `email' to `value'
 		do
 			email := value
 		end
-	
+
 	set_name (value: UC_UTF8_STRING)
 			-- Set `name' to `value'
 		do
 			name := value
 		end
-	
+
 	set_photo (value: UC_UTF8_STRING)
 			-- Set `photo' to `value'
 		do
 			photo := value
 		end
-	
+
 feature -- Status report
 
 	debug_output: READABLE_STRING_GENERAL
@@ -81,5 +92,5 @@ feature -- Status report
 				"PHOTO: " + photo.out + ", " +
 				"WS COUNT: " + workspaces.count.out
 		end
-	
+
 end

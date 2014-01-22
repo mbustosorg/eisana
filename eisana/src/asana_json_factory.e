@@ -11,7 +11,7 @@ class
 inherit
 	ASANA_FACTORY
 
-feature -- Access
+feature -- Factory
 
 	user_from_string (response: detachable READABLE_STRING_8): ASANA_USER
 			-- <Precursor>
@@ -23,7 +23,7 @@ feature -- Access
 			if attached response then
 				create parser.make_parser (response)
 				if parser.is_parsed and attached parser.parse_object as j_o then
-					if attached {JSON_OBJECT} j_o.item (create {JSON_STRING}.make_json ("data")) as json then	
+					if attached {JSON_OBJECT} j_o.item (create {JSON_STRING}.make_json ("data")) as json then
 						if attached {JSON_NUMBER} json.item ("id") as json_number then
 							Result.id := json_number.item.to_integer_64
 						end
@@ -53,7 +53,7 @@ feature -- Access
 			end
 		end
 
-	users_from_string (response: detachable READABLE_STRING_8): ARRAYED_LIST [ASANA_USER]	
+	users_from_string (response: detachable READABLE_STRING_8): ARRAYED_LIST [ASANA_USER]
 			-- <Precursor>
 		local
 			parser: JSON_PARSER
@@ -85,7 +85,7 @@ feature -- Access
 				end
 			end
 		end
-	
+
 	tasks_from_string (response: detachable READABLE_STRING_8): ARRAYED_LIST [ASANA_TASK]
 			-- <Precursor>
 		local
@@ -108,7 +108,7 @@ feature -- Access
 				end
 			end
 		end
-	
+
 	task_from_string (response: detachable READABLE_STRING_8): ASANA_TASK
 			-- <Precursor>
 		local
@@ -212,7 +212,7 @@ feature -- Access
 				end
 			end
 		end
-	
+
 	team_from_string (response: detachable READABLE_STRING_8): ASANA_TAG
 			-- <Precursor>
 		local
@@ -233,5 +233,5 @@ feature -- Access
 				end
 			end
 		end
-	
+
 end

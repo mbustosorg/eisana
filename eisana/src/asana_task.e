@@ -38,7 +38,7 @@ feature -- Element modification
 		do
 			id := value
 		end
-	
+
 	set_assignee (value: ASANA_USER)
 			-- Set `assignee' to `value'
 		do
@@ -68,23 +68,48 @@ feature -- Element modification
 		do
 			workspace := value
 		end
-			
+
 feature -- Access
 
 	id: INTEGER_64 assign set_id
 	assignee: ASANA_USER assign set_assignee
+		-- User to which this task is assigned, or null if the task is unassigned.
+		--! I think assignee it's an optional property.
+		-- So why not make it a detachable property?
+		-- assignee detachable ASANA_USER,
+
 	--assignee_status: ASANA_ASSIGNEE_STATUS
 	created_at: DATE_TIME
+		-- The time at which this task was created.
 	completed: BOOLEAN
+		-- Is the task completed?
+
 	completed_at: DATE_TIME
+		-- The time at which this task was completed.
+
 	due_on: DATE
+		-- Date on which this task is due, or null if the task has no due date.
+		-- maybe we can define it as detachable.
+
 	followers: UC_UTF8_STRING assign set_followers
+		-- Users following this task.
+		-- Why not followers: ARRAYED_LIST [ASANA_USER]?
+
 	modified_at: DATE_TIME
+		--  The time at which this task was last modified.
+
 	name: UC_UTF8_STRING assign set_name
+		-- Name of the task.
+
 	notes: UC_UTF8_STRING assign set_notes
+		-- Information associated with the task.
+
 	projects: ARRAYED_LIST [ASANA_PROJECT]
+		-- Projects this task is associated with.
+
 	--parent: ASANA_TASK
+
 	workspace: ASANA_WORKSPACE assign set_workspace
-	
+		-- The workspace this task is associated with.
 end
 
