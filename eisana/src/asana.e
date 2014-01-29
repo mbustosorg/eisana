@@ -318,6 +318,26 @@ feature -- Query
 			end
 		end
 
+	story (a_id: INTEGER_64): detachable ASANA_STORY
+			-- Story of id `a_id'.
+		require
+			has_id: a_id > 0
+		local
+			resp: HTTP_CLIENT_RESPONSE
+		do
+			reset_error
+			resp := session.get ("/stories/" + a_id.out, new_request_context)
+			analyze_response (resp)
+			if
+				is_success and then
+				attached factory.story_from_string (resp.body) as l_story
+			then
+				Result := l_story
+			else
+				has_internal_error := is_success
+			end
+		end
+
 feature {NONE} -- Implementation
 
 	factory: ASANA_FACTORY

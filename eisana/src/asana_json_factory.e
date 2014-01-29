@@ -22,6 +22,7 @@ feature -- Factory: user
 		end
 
 	user_from_json (json: JSON_OBJECT): detachable ASANA_USER
+			-- User from `json' object if well formed.
 		local
 			i: INTEGER
 		do
@@ -69,6 +70,7 @@ feature -- Factory: user
 		end
 
 	users_from_json_array (json_array: JSON_ARRAY): ARRAYED_LIST [ASANA_USER]
+			-- Collection of Users from `json' object.
 		do
 			create Result.make (json_array.count)
 			across (1 |..| json_array.count) as ic loop
@@ -99,7 +101,8 @@ feature -- Factory: task
 			end
 		end
 
-	tasks_from_json_array (json_array: JSON_ARRAY): detachable ARRAYED_LIST [ASANA_TASK]
+	tasks_from_json_array (json_array: JSON_ARRAY): ARRAYED_LIST [ASANA_TASK]
+			-- Collection of Tasks from `json' object.
 		do
 			create Result.make (json_array.count)
 			across (1 |..| json_array.count) as i loop
@@ -122,7 +125,7 @@ feature -- Factory: task
 		end
 
 	task_from_json (json: JSON_OBJECT): detachable ASANA_TASK
-			-- <Precursor>
+			-- Task from `json' object if well formed.
 		do
 			if json.has_key ("id") then
 				create Result.make_with_id (id_from_json ("id", json))
@@ -184,7 +187,7 @@ feature -- Factory: story
 		end
 
 	story_from_json (json: JSON_OBJECT): detachable ASANA_STORY
-			-- <Precursor>
+			-- Story from `json' object if well formed.
 		do
 			if json.has_key ("id") then
 				create Result.make_with_id (id_from_json ("id", json))
@@ -227,6 +230,7 @@ feature -- Factory: story
 		end
 
 	stories_from_json_array (json_array: JSON_ARRAY): detachable ARRAYED_LIST [ASANA_STORY]
+			-- Stories from `json' object.
 		do
 			create Result.make (json_array.count)
 			across (1 |..| json_array.count) as i loop
@@ -251,6 +255,7 @@ feature -- Factory: workspace
 		end
 
 	workspace_from_json (json: JSON_OBJECT): detachable ASANA_WORKSPACE
+			-- Workspace from `json' object if well formed	.
 		do
 			if json.has_key ("id") then
 				create Result.make_with_id (id_from_json ("id", json))
@@ -274,6 +279,7 @@ feature -- Factory: tag
 		end
 
 	tag_from_json (json: JSON_OBJECT): detachable ASANA_TAG
+			-- Tag from `json' object if well formed	.
 		do
 			if json.has_key ("id") then
 				create Result.make_with_id (id_from_json ("id", json))
@@ -310,6 +316,7 @@ feature -- Factory: project
 		end
 
 	project_from_json (json: JSON_OBJECT): detachable ASANA_PROJECT
+			-- Project from `json' object if well formed	.
 		do
 			if json.has_key ("id") then
 				create Result.make_with_id (id_from_json ("id", json))
@@ -340,6 +347,7 @@ feature -- Factory: team
 		end
 
 	team_from_json (json: JSON_OBJECT): detachable ASANA_TEAM
+			-- Team from `json' object if well formed.
 		do
 			if json.has_key ("id") then
 				create Result.make_with_id (id_from_json ("id", json))
@@ -355,6 +363,8 @@ feature -- Factory: team
 feature {NONE} -- JSON helper
 
 	json_object_data_from_string (s: detachable READABLE_STRING_8): detachable JSON_OBJECT
+			-- JSON_OBJECT object from json string `s'.	
+			--| if there is a `data' item, use this one, otherwise use directly the root object.
 		local
 			parser: JSON_PARSER
 		do
@@ -376,6 +386,8 @@ feature {NONE} -- JSON helper
 		end
 
 	json_array_data_from_string (s: detachable READABLE_STRING_8): detachable JSON_ARRAY
+			-- JSON_ARRAY object from json string `s'.
+			--| the `data' item has to be a JSON Array, otherwise return Void
 		local
 			parser: JSON_PARSER
 		do
@@ -397,7 +409,7 @@ feature {NONE} -- JSON helper
 		end
 
 	id_name_object_from_json (json: JSON_OBJECT): detachable ASANA_ID_NAME
-			-- ASANA_ID_NAME object from json.item (k) if possible.
+			-- ASANA_ID_NAME object from json object if expected.
 		do
 			if json.has_key ("id") then
 				create Result.make_with_id (id_from_json ("id", json))
@@ -411,7 +423,7 @@ feature {NONE} -- JSON helper
 		end
 
 	id_name_object_list_from_json (json_array: JSON_ARRAY): ARRAYED_LIST [ASANA_ID_NAME]
-			-- ASANA_ID_NAME object from json.item (k) if possible.
+			-- ASANA_ID_NAME objects from json_array).
 		local
 			i,n: INTEGER
 		do
@@ -433,6 +445,8 @@ feature {NONE} -- JSON helper
 		end
 
 	id_from_json (k: STRING; json: JSON_OBJECT): INTEGER_64
+			-- Asana ID value stored in json.item (k).
+			-- currently represented as an INTEGER_64 value.
 		require
 			json.has_key (k)
 		do
@@ -440,15 +454,19 @@ feature {NONE} -- JSON helper
 		end
 
 	integer_64_from_json (k: STRING; json: JSON_OBJECT): INTEGER_64
+			-- Integer value stored in json.item (k) if any.			
 		do
 			if attached {JSON_NUMBER} json.item (k) as j_number then
 				Result := j_number.item.to_integer_64
 			else
 				check is_number: False end
+				-- Catch any bad usage of the data
 			end
 		end
 
 	boolean_from_json (k: STRING; json: JSON_OBJECT; dft: BOOLEAN): BOOLEAN
+			-- Boolean stored in json.item (k) if any.		
+			-- if no value is available return the default `dft' value.
 		do
 			if json.has_key (k) then
 				if attached {JSON_BOOLEAN} json.item (k) as j_boolean then
@@ -462,34 +480,40 @@ feature {NONE} -- JSON helper
 		end
 
 	utf_8_from_json (k: STRING; json: JSON_OBJECT): detachable UC_UTF8_STRING
+			-- UTF8 string of text stored in json.item (k) if any.	
 		do
 			if json.has_key (k) then
 				if attached {JSON_STRING} json.item (k) as j_string then
 					Result := create {UC_UTF8_STRING}.make_from_string (j_string.item)
 				else
 					check is_string_or_null: attached {JSON_NULL} json.item (k) end
+						-- Catch any bad usage of the data
 				end
 			end
 		end
 
 	date_time_from_json (k: STRING; json: JSON_OBJECT): detachable ASANA_DATE_TIME
+			-- Asana Date time stored in json.item (k) if any.	
 		do
 			if json.has_key (k) then
 				if attached {JSON_STRING} json.item (k) as j_date then
 					create Result.make_from_string (j_date.item)
 				else
 					check is_string_or_null: attached {JSON_NULL} json.item (k) end
+						-- Catch any bad usage of the data				
 				end
 			end
 		end
 
 	date_from_json (k: STRING; json: JSON_OBJECT): detachable ASANA_DATE
+			-- Asana Date stored in json.item (k) if any.
 		do
 			if json.has_key (k) then
 				if attached {JSON_STRING} json.item (k) as j_date then
 					create Result.make_from_string (j_date.item)
 				else
 					check is_string_or_null: attached {JSON_NULL} json.item (k) end
+						-- Catch any bad usage of the data
 				end
 			end
 		end

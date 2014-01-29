@@ -27,17 +27,22 @@ convert
 feature {NONE} -- Initialization
 
 	make_now_utc
+			-- Create current date now in UTC timezone.
 		do
 			make_from_date_time (create {like date_time}.make_now_utc)
 		end
 
 	make_from_string (s: READABLE_STRING_8)
+			-- Create current date from `s'.
+		require
+			is_valid_asana_date_string: is_valid_asana_date_time_string (s)
 		do
 			internal_string := s
 			internal_date_time := Void
 		end
 
 	make_from_date_time (d: like date_time)
+			-- Create current data from `d'.
 		do
 			internal_date_time := d
 			internal_string := Void
@@ -46,6 +51,7 @@ feature {NONE} -- Initialization
 feature -- Access
 
 	date_time: DATE_TIME
+			-- Associated DATE_TIME object.	
 		local
 			d: like internal_date_time
 		do
@@ -67,11 +73,13 @@ feature -- Access
 		end
 
 	date: DATE
+			-- DATE part of the associated DATE_TIME object.	
 		do
 			Result := date_time.date
 		end
 
 	string: STRING
+			-- Associated text representation.	
 		local
 			s: like internal_string
 			d: like internal_date_time
@@ -105,6 +113,17 @@ feature -- Access
 				internal_string := s
 			end
 			Result := s
+		ensure
+			is_valid_asana_date_time_string (Result)
+		end
+
+feature -- Status report
+
+	is_valid_asana_date_time_string (s: READABLE_STRING_8): BOOLEAN
+			-- Is `s' a valid asana date time string?
+			-- Format: 2014-01-29T16:10:12.345Z
+		do
+			Result := string_to_date_time (s) /= Void
 		end
 
 feature {NONE} -- Internal

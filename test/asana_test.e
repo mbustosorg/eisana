@@ -163,20 +163,17 @@ feature -- Test routines
 					if attached tasks.first as t then
 						stories := asana.task_stories (t)
 						assert ("success", asana.is_success)
+						across
+							stories as ic
+						loop
+							if attached asana.story (ic.item.id) as l_story then
+							else
+								assert ("find story", False)
+							end
+						end
 					end
 				end
 			end
-
---			-- Create a project
---			create project.make_empty
---			project.set_name (create {UC_UTF8_STRING}.make_from_string ("_testing_ project name"))
---			project.set_notes (create {UC_UTF8_STRING}.make_from_string ("_testing_ project notes"))
---			project.set_workspace (user.workspaces[1])
---			project := asana.new_project (project)
---			assert ("project created", asana.is_success)
---			-- Delete a project
---			asana.delete_project (project)
---			assert ("project deleted", asana.is_success)
 		end
 
 end

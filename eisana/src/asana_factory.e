@@ -30,6 +30,11 @@ feature -- Factory
 		deferred
 		end
 
+	story_from_string (response: detachable READABLE_STRING_8): detachable ASANA_STORY
+			-- Story from `response'
+		deferred
+		end
+
 	stories_from_string (response: detachable READABLE_STRING_8): detachable ARRAYED_LIST [ASANA_STORY]
 			-- Stories related to a task from `response'
 		deferred
