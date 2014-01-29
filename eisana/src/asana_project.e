@@ -9,15 +9,23 @@ note
 class
 	ASANA_PROJECT
 
+inherit
+	ASANA_ID_NAME
+		redefine
+			make_with_id
+		end
+
 create
 	make_empty
 
+create {ASANA_FACTORY}
+	make_with_id
+
 feature {NONE} -- Creation
 
-	make_empty
-			-- Create an empty project object
+	make_with_id (a_id: like id)
 		do
-			create name.make_empty
+			Precursor (a_id)
 			create color.make_empty
 			create notes.make_empty
 			create modified_at.make_now
@@ -30,7 +38,6 @@ feature {NONE} -- Creation
 
 feature -- Access
 
-	id: INTEGER_64 assign set_id
 	archived: BOOLEAN
 		-- Is the projec archived?
 
@@ -42,9 +49,6 @@ feature -- Access
 
 	modified_at: DATE_TIME
 		-- The time at which this project was last mofified.
-
-	name: UC_UTF8_STRING assign set_name
-		-- Project name.
 
 	color: UC_UTF8_STRING
 		-- Color of the project
@@ -59,18 +63,6 @@ feature -- Access
 		-- The team that this project is shared with.
 
 feature -- Element modification
-
-	set_id (value: INTEGER_64)
-			-- Set `id' to `value'
-		do
-			id := value
-		end
-
-	set_name (value: UC_UTF8_STRING)
-			-- Set `name' to `value'
-		do
-			name := value
-		end
 
 	set_notes (value: UC_UTF8_STRING)
 			-- Set `notes' to `value'
