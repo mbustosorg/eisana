@@ -28,10 +28,12 @@ feature -- Access
 	last_error: detachable ASANA_ERROR
 			-- Status of the last API call
 
+	has_internal_error: BOOLEAN
+
 	is_success: BOOLEAN
 			-- Last operation succeed without any error?
 		do
-			Result := last_error = Void
+			Result := last_error = Void or has_internal_error
 		end
 
 feature -- Basic operations
@@ -40,6 +42,7 @@ feature -- Basic operations
 			-- Reset `last_error'.
 		do
 			last_error := Void
+			has_internal_error := False
 		end
 
 	new_task (task: ASANA_TASK): ASANA_TASK
@@ -49,14 +52,21 @@ feature -- Basic operations
 			resp: HTTP_CLIENT_RESPONSE
 		do
 			reset_error
-			post_data := "{ %"data%": {%"workspace%":" + task.workspace.id.out + ","
-			post_data.append ("%"name%":%"" + task.name + "%",")
-			post_data.append ("%"assignee%":" + task.assignee.id.out + "}}")
+			post_data := "{ %"data%": {%"workspace%":" + task.workspace.id.out
+			post_data.append (",%"name%":%"" + task.name + "%"")
+			if attached task.assignee as l_assignee then
+				post_data.append (",%"assignee%":" + l_assignee.id.out)
+			end
+			post_data.append ("}}")
 			resp := session.post ("/tasks", new_request_context, post_data)
 			analyze_response (resp)
-			if is_success then
-				Result := factory.task_from_string (resp.body)
+			if
+				is_success and then
+				attached factory.task_from_string (resp.body) as l_task
+			then
+				Result := l_task
 			else
+				has_internal_error := is_success
 				create Result.make_empty
 			end
 		end
@@ -80,13 +90,17 @@ feature -- Basic operations
 			resp: HTTP_CLIENT_RESPONSE
 		do
 			reset_error
-			post_data := "{ %"data%": {%"workspace%":" + workspace.id.out + ","
-			post_data.append ("%"name%":%"" + name + "%"}}")
+			post_data := "{ %"data%": {%"workspace%":" + workspace.id.out
+			post_data.append (",%"name%":%"" + name + "%"}}")
 			resp := session.post ("/tags", new_request_context, post_data)
 			analyze_response (resp)
-			if is_success then
-				Result := factory.tag_from_string (resp.body)
+			if
+				is_success and then
+				attached factory.tag_from_string (resp.body) as l_tag
+			then
+				Result := l_tag
 			else
+				has_internal_error := is_success
 				create Result.make_empty
 			end
 		end
@@ -128,14 +142,15 @@ feature -- Basic operations
 			resp: HTTP_CLIENT_RESPONSE
 		do
 			reset_error
-			post_data := "{ %"data%": {%"workspace%":" + project.workspace.id.out + ","
-			post_data.append ("%"name%":%"" + project.name + "%",")
-			post_data.append ("%"notes%":%"" + project.notes + "%"}}")
+			post_data := "{ %"data%": {%"workspace%":" + project.workspace.id.out
+			post_data.append (",%"name%":%"" + project.name + "%"")
+			post_data.append (",%"notes%":%"" + project.notes + "%"}}")
 			resp := session.post ("/projects", new_request_context, post_data)
 			analyze_response (resp)
-			if is_success then
-				Result := factory.project_from_string (resp.body)
+			if is_success and then attached factory.project_from_string (resp.body) as proj then
+				Result := proj
 			else
+				has_internal_error := is_success
 				create Result.make_empty
 			end
 		end
@@ -156,22 +171,38 @@ feature -- Query
 
 	task_by_id (id: INTEGER): ASANA_TASK
 			-- Task object for `id'
+		local
+			resp: HTTP_CLIENT_RESPONSE
 		do
-			create Result.make_empty
+			reset_error
+			resp := session.get ("/tasks/" + id.out, new_request_context)
+			analyze_response (resp)
+			if
+				is_success and then
+				attached factory.task_from_string (resp.body) as l_task
+			then
+				Result := l_task
+			else
+				has_internal_error := is_success
+				create Result.make_empty
+			end
 		end
 
 	tasks (workspace: ASANA_WORKSPACE; assignee: ASANA_USER): ARRAYED_LIST [ASANA_TASK]
 			-- Collection of tasks for `assignee' in `workspace'
 		local
 			resp: HTTP_CLIENT_RESPONSE
-			task: ASANA_TASK
 		do
 			reset_error
 			resp := session.get ("/tasks?workspace=" + workspace.id.out + "&assignee=" + assignee.query_name, new_request_context)
 			analyze_response (resp)
-			if is_success then
-				Result := factory.tasks_from_string (resp.body)
+			if
+				is_success and then
+				attached factory.tasks_from_string (resp.body) as lst
+			then
+				Result := lst
 			else
+				has_internal_error := is_success
 				create Result.make (0)
 			end
 		end
@@ -184,17 +215,17 @@ feature -- Query
 		do
 			create Result.make (0)
 			across user_for_tasks.workspaces as workspace
+			until
+				not is_success
 	        loop
-				if is_success then
-					task_list := tasks (workspace.item, user_for_tasks)
-					from
-						i := 1
-					until
-						i > task_list.count
-					loop
-						Result.extend (task_list[i])
-						i := i + 1
-					end
+				task_list := tasks (workspace.item, user_for_tasks)
+				from
+					i := 1
+				until
+					i > task_list.count
+				loop
+					Result.extend (task_list[i])
+					i := i + 1
 				end
 		    end
 		end
@@ -213,22 +244,32 @@ feature -- Query
 				resp := session.get ("/users/" + id.out, new_request_context)
 			end
 			analyze_response (resp)
-			Result := factory.user_from_string (resp.body)
+			if
+				is_success and then
+				attached factory.user_from_string (resp.body) as l_user
+			then
+				Result := l_user
+			else
+				has_internal_error := is_success
+				create Result.make_empty
+			end
 		end
 
 	users: ARRAYED_LIST [ASANA_USER]
 			-- Collection of users in this application
 		local
 			resp: HTTP_CLIENT_RESPONSE
-			user: ASANA_USER
-			i: INTEGER
 		do
 			reset_error
 			resp := session.get ("/users?opt_fields=name,email,workspaces", new_request_context)
 			analyze_response (resp)
-			if is_success then
-				Result := factory.users_from_string (resp.body)
+			if
+				is_success and then
+				attached factory.users_from_string (resp.body) as lst
+			then
+				Result := lst
 			else
+				has_internal_error := is_success
 				create Result.make (0)
 			end
 		end
@@ -241,23 +282,66 @@ feature -- Query
 			has_id: tag.id > 0
 		local
 			resp: HTTP_CLIENT_RESPONSE
-			task: ASANA_TASK
-			i: INTEGER
 		do
 			reset_error
 			resp := session.get ("/tags/" + tag.id.out + "/tasks", new_request_context)
 			analyze_response (resp)
-			if is_success then
-				Result := factory.tasks_from_string (resp.body)
+			if
+				is_success and then
+				attached factory.tasks_from_string (resp.body) as lst
+			then
+				Result := lst
 			else
+				has_internal_error := is_success
 				create Result.make (0)
+			end
+		end
+
+	task_stories (task: ASANA_TASK): ARRAYED_LIST [ASANA_STORY]
+			-- Stories associated with `task'.
+		require
+			has_id: task.id > 0
+		local
+			resp: HTTP_CLIENT_RESPONSE
+		do
+			reset_error
+			resp := session.get ("/tasks/" + task.id.out + "/stories", new_request_context)
+			analyze_response (resp)
+			if
+				is_success and then
+				attached factory.stories_from_string (resp.body) as lst
+			then
+				Result := lst
+			else
+				has_internal_error := is_success
+				create Result.make (0)
+			end
+		end
+
+	story (a_id: INTEGER_64): detachable ASANA_STORY
+			-- Story of id `a_id'.
+		require
+			has_id: a_id > 0
+		local
+			resp: HTTP_CLIENT_RESPONSE
+		do
+			reset_error
+			resp := session.get ("/stories/" + a_id.out, new_request_context)
+			analyze_response (resp)
+			if
+				is_success and then
+				attached factory.story_from_string (resp.body) as l_story
+			then
+				Result := l_story
+			else
+				has_internal_error := is_success
 			end
 		end
 
 feature {NONE} -- Implementation
 
 	factory: ASANA_FACTORY
-	
+
 	analyze_response (resp: HTTP_CLIENT_RESPONSE)
 			-- Set the `last_error' status using `resp' if an error occurred
 			-- otherwise make sure `is_success' is True

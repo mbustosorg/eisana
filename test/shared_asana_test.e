@@ -18,7 +18,7 @@ feature -- testing data
  			k: detachable STRING
  		once
  			create p.make_current
- 			p := p.extended ("test").extended ("apikey.txt")
+ 			p := p.extended ("apikey.txt")
  			create f.make_with_path (p)
  			if f.exists and then f.is_access_readable then
  				f.open_read

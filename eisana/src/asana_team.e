@@ -9,36 +9,27 @@ note
 class
 	ASANA_TEAM
 
+inherit
+	ASANA_ID_NAME
+		redefine
+			make_with_id
+		end
+
 create
 	make_empty
 
+create {ASANA_FACTORY}
+	make_with_id
+
 feature {NONE} -- Creation
 
-	make_empty
-			-- Create an empty team object
+	make_with_id (a_id: like id)
 		do
-			create name.make_empty
+			Precursor (a_id)
 		end
 
 feature -- Access
 
-	id: INTEGER_64 assign set_id
-
-	name: UC_UTF8_STRING assign set_name
-		-- Name of the team.
-		
 feature -- Element modification
-
-	set_id (value: INTEGER_64)
-			-- Set `id' to `value'
-		do
-			id := value
-		end
-
-	set_name (value: UC_UTF8_STRING)
-			-- Set `name' to `value'
-		do
-			name := value
-		end
 
 end

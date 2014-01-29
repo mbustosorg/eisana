@@ -9,35 +9,31 @@ note
 class
 	ASANA_TAG
 
+inherit
+	ASANA_ID_NAME
+		redefine
+			make_with_id
+		end
+
 create
 	make_empty
 
+create {ASANA_FACTORY}
+	make_with_id
+
 feature {NONE} -- Creation
 
-	make_empty
-			-- Create an empty tag object
+	make_with_id (a_id: like id)
 		do
+			Precursor (a_id)
 			create created_at.make_now
 			create followers.make (0)
-			create name.make_empty
 			create color.make_empty
 			create notes.make_empty
 			create workspace.make_empty
 		end
 
 feature -- Element modification
-
-	set_id (value: INTEGER_64)
-			-- Set `id' to `value'
-		do
-			id := value
-		end
-
-	set_name (value: UC_UTF8_STRING)
-			-- Set `name' to `value'
-		do
-			name := value
-		end
 
 	set_color (value: UC_UTF8_STRING)
 			-- Set `color' to `value'
@@ -59,16 +55,12 @@ feature -- Element modification
 
 feature -- Access
 
-	id: INTEGER_64 assign set_id
 
 	created_at: DATE_TIME
 		-- The time at which this tag was created.
 
 	followers: ARRAYED_LIST [ASANA_USER]
 		-- Users following this tag.
-
-	name: UC_UTF8_STRING assign set_name
-		-- Tag name.
 
 	color: UC_UTF8_STRING assign set_color
 		-- Color of the tag.
