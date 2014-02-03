@@ -39,7 +39,7 @@ feature {NONE} -- Creation
 feature -- Access
 
 	archived: BOOLEAN
-		-- Is the projec archived?
+		-- Is the project archived?
 
 	created_at: DATE_TIME
 		-- The time at which this project was created.
