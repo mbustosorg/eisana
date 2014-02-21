@@ -1,6 +1,6 @@
 note
-	description: "Summary description for {ASANA_ID_NAME}."
-	author: ""
+	description: "Base class for ASANA entities.  Provide id assignments."
+	author: "Mauricio Bustos"
 	date: "$Date$"
 	revision: "$Revision$"
 

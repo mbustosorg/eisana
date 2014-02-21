@@ -45,6 +45,8 @@ feature -- Basic operations
 			has_internal_error := False
 		end
 
+feature -- Create
+
 	new_task (task: ASANA_TASK): ASANA_TASK
 			-- Create a task using the `task' specification
 		local
@@ -71,16 +73,24 @@ feature -- Basic operations
 			end
 		end
 
-	delete_task (task: ASANA_TASK)
-			-- Delete a task using the `task' specification
-		require
-			has_id: task.id > 0
+	new_project (project: ASANA_PROJECT): ASANA_PROJECT
+			-- Create a new project using the `project' specification
 		local
+			post_data: STRING
 			resp: HTTP_CLIENT_RESPONSE
 		do
 			reset_error
-			resp := session.delete ("/tasks/" + task.id.out, new_request_context)
+			post_data := "{ %"data%": {%"workspace%":" + project.workspace.id.out
+			post_data.append (",%"name%":%"" + project.name + "%"")
+			post_data.append (",%"notes%":%"" + project.notes + "%"}}")
+			resp := session.post ("/projects", new_request_context, post_data)
 			analyze_response (resp)
+			if is_success and then attached factory.project_from_string (resp.body) as proj then
+				Result := proj
+			else
+				has_internal_error := is_success
+				create Result.make_empty
+			end
 		end
 
 	new_tag (name: STRING; workspace: ASANA_WORKSPACE): ASANA_TAG
@@ -105,6 +115,70 @@ feature -- Basic operations
 			end
 		end
 
+feature -- Delete
+	
+	delete_task (task: ASANA_TASK)
+			-- Delete a task using the `task' specification
+		require
+			has_id: task.id > 0
+		local
+			resp: HTTP_CLIENT_RESPONSE
+		do
+			reset_error
+			resp := session.delete ("/tasks/" + task.id.out, new_request_context)
+			analyze_response (resp)
+		end
+
+	delete_project (project: ASANA_PROJECT)
+			-- Delete the project matching the `project' specification
+		require
+			valid_id: project.id > 0
+		local
+			resp: HTTP_CLIENT_RESPONSE
+		do
+			reset_error
+			resp := session.delete ("/projects/" + project.id.out, new_request_context)
+			analyze_response (resp)
+		end
+
+feature -- Modify
+
+	appended_put_data (put_data: STRING; attribute_name: STRING; value: STRING): STRING
+			-- Put data properly appeneded with value
+		do
+			Result := put_data.twin
+			if not put_data.is_empty and then put_data.item (put_data.count) /= '{' then
+				Result.append (", ")
+			end
+			Result.append ("%"" + attribute_name + "%": %"" + value + "%"")
+		end
+	
+	update_task (task: ASANA_TASK)
+			-- Update attributes of `task'
+		require
+			valid_id: task.id > 0
+		local
+			previous: ASANA_TASK
+			put_data: STRING
+			resp: HTTP_CLIENT_RESPONSE
+		do
+			previous := task_by_id (task.id)
+			if is_success then
+				put_data := "{ %"data%": {"
+				if previous.assignee /= task.assignee and then attached task.assignee as assignee then
+					put_data := appended_put_data (put_data, "assignee", assignee.id.out)
+				end
+				if previous.completed /= task.completed then
+					put_data := appended_put_data (put_data, "completed", task.completed.out)
+				end
+				if previous.notes /= task.notes then
+					put_data := appended_put_data (put_data, "notes", create {UC_UTF8_STRING}.make_from_string (task.notes))
+				end
+				resp := session.put ("/tasks/" + task.id.out, new_request_context, put_data + "}}")
+				analyze_response (resp)
+			end
+		end
+	
 	assign_tag (tag: ASANA_TAG; task: ASANA_TASK)
 			-- Assign tag `tag' to `task'
 		require
@@ -135,41 +209,9 @@ feature -- Basic operations
 			analyze_response (resp)
 		end
 
-	new_project (project: ASANA_PROJECT): ASANA_PROJECT
-			-- Create a new project using the `project' specification
-		local
-			post_data: STRING
-			resp: HTTP_CLIENT_RESPONSE
-		do
-			reset_error
-			post_data := "{ %"data%": {%"workspace%":" + project.workspace.id.out
-			post_data.append (",%"name%":%"" + project.name + "%"")
-			post_data.append (",%"notes%":%"" + project.notes + "%"}}")
-			resp := session.post ("/projects", new_request_context, post_data)
-			analyze_response (resp)
-			if is_success and then attached factory.project_from_string (resp.body) as proj then
-				Result := proj
-			else
-				has_internal_error := is_success
-				create Result.make_empty
-			end
-		end
-
-	delete_project (project: ASANA_PROJECT)
-			-- Delete the project matching the `project' specification
-		require
-			valid_id: project.id > 0
-		local
-			resp: HTTP_CLIENT_RESPONSE
-		do
-			reset_error
-			resp := session.delete ("/projects/" + project.id.out, new_request_context)
-			analyze_response (resp)
-		end
-
 feature -- Query
 
-	task_by_id (id: INTEGER): ASANA_TASK
+	task_by_id (id: INTEGER_64): ASANA_TASK
 			-- Task object for `id'
 		local
 			resp: HTTP_CLIENT_RESPONSE

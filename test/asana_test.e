@@ -58,7 +58,7 @@ feature -- Test routines
 		    end
 		end
 
-	test_delete_task
+ 	test_delete_task
 			-- Test task deletion
 		note
 			testing:  "covers/{ASANA_TASK}"
@@ -85,6 +85,30 @@ feature -- Test routines
 					assert ("task " + task.name + " deleted", asana.is_success)
 	        	end
 		    end
+		end
+
+ 	test_update_task
+			-- Test task update
+		note
+			testing:  "covers/{ASANA_TASK}"
+		local
+			user: ASANA_USER
+			task: ASANA_TASK
+			notes: UC_UTF8_STRING
+		do
+			user := asana.user_from_id (0)
+			assert ("me found", asana.is_success)
+			task := new_task (user, "_testing_ task update")
+			assert ("task %"" + task.name + "%" created", asana.is_success)
+			create notes.make_from_string ("updated notes")
+			task.notes := notes
+			asana.update_task (task)
+			assert ("task " + task.name + " updated", asana.is_success)
+			task := asana.task_by_id (task.id)
+			assert ("task " + task.name + " retrieved", asana.is_success)
+			assert ("task notes updated", task.notes ~ notes)
+			asana.delete_task (task)
+			assert ("task " + task.name + " deleted", asana.is_success)
 		end
 
 	test_tags

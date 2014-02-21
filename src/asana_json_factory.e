@@ -145,7 +145,6 @@ feature -- Factory: task
 				if attached date_from_json ("due_on", json) as l_due_on then
 					Result.due_on := l_due_on
 				end
-
 				if attached {JSON_OBJECT} json.item ("assignee") as j_assignee then
 					if attached user_from_json (j_assignee) as l_assignee then
 						Result.assignee := l_assignee
@@ -156,7 +155,9 @@ feature -- Factory: task
 				if attached utf_8_from_json ("name", json) as l_name then
 					Result.name := l_name
 				end
-
+				if attached utf_8_from_json ("notes", json) as l_notes then
+					Result.notes := l_notes
+				end
 				if attached {JSON_ARRAY} json.item ("followers") as j_followers then
 					Result.followers := id_name_object_list_from_json (j_followers)
 				end

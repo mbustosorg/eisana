@@ -56,7 +56,7 @@ feature -- Factory
 		end
 
 	team_from_string (response: detachable READABLE_STRING_8): detachable ASANA_TEAM
-			-- Project from `response'
+			-- Team from `response'
 		deferred
 		end
 

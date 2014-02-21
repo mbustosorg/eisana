@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<system xmlns="http://www.eiffel.com/developers/xml/configuration-1-13-0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.eiffel.com/developers/xml/configuration-1-13-0 http://www.eiffel.com/developers/xml/configuration-1-13-0.xsd" name="asana_test" uuid="58790A6E-6403-46E5-B278-512EC92DF101">
+<system xmlns="http://www.eiffel.com/developers/xml/configuration-1-11-0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.eiffel.com/developers/xml/configuration-1-11-0 http://www.eiffel.com/developers/xml/configuration-1-11-0.xsd" name="asana_test" uuid="58790A6E-6403-46E5-B278-512EC92DF101">
 	<target name="asana_test">
 		<root class="ASANA_TEST" feature="default_create"/>
 		<option void_safety="transitional">
 		</option>
 		<setting name="console_application" value="true"/>
-		<library name="asana_api" location="..\eisana\asana_api-safe.ecf" readonly="false"/>
+		<library name="asana_api" location="..\asana_api-safe.ecf" readonly="false"/>
 		<library name="base" location="$ISE_LIBRARY\library\base\base-safe.ecf"/>
 		<library name="gobo_kernel" location="$ISE_LIBRARY\library\gobo\gobo_kernel-safe.ecf"/>
 		<library name="testing" location="$ISE_LIBRARY\library\testing\testing-safe.ecf"/>
