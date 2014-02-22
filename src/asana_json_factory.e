@@ -145,6 +145,9 @@ feature -- Factory: task
 				if attached date_from_json ("due_on", json) as l_due_on then
 					Result.due_on := l_due_on
 				end
+				if attached date_from_json ("assignee_status", json) as l_assignee_status then
+					Result.assignee_status := l_assignee_status
+				end
 				if attached {JSON_OBJECT} json.item ("assignee") as j_assignee then
 					if attached user_from_json (j_assignee) as l_assignee then
 						Result.assignee := l_assignee

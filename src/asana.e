@@ -79,7 +79,7 @@ feature -- Create
 			post_data: STRING
 			resp: HTTP_CLIENT_RESPONSE
 		do
-			reset_error
+ 			reset_error
 			post_data := "{ %"data%": {%"workspace%":" + project.workspace.id.out
 			post_data.append (",%"name%":%"" + project.name + "%"")
 			post_data.append (",%"notes%":%"" + project.notes + "%"}}")

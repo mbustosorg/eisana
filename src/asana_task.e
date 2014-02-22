@@ -32,8 +32,7 @@ feature {NONE} -- Creation
 			create modified_at.make_now_utc
 			create due_on.make_now_utc
 			create projects.make (0)
-			--create assignee_status.make_empty
-			--create parent.make_empty
+			create assignee_status.make_empty
 			create workspace.make_empty
 		end
 
@@ -75,6 +74,12 @@ feature -- Element modification
 			assignee := value
 		end
 
+	set_assignee_status (value: like assignee_status)
+			-- Set `assignee_status' to `value'
+		do
+			assignee_status := value
+		end
+
 	set_followers (value: like followers)
 			-- Set `followers' to `value'
 		do
@@ -104,7 +109,8 @@ feature -- Access
 	assignee: detachable ASANA_USER assign set_assignee
 			-- User to which this task is assigned, or null if the task is unassigned.
 
-	--assignee_status: ASANA_ASSIGNEE_STATUS
+	assignee_status: UC_UTF8_STRING assign set_assignee_status
+			-- Status of task for `assignee'
 
 	created_at: ASANA_DATE_TIME assign set_created_at
 			-- The time at which this task was created.
@@ -131,8 +137,6 @@ feature -- Access
 
 	projects: ARRAYED_LIST [ASANA_PROJECT]
 			-- Projects this task is associated with.
-
-	--parent: ASANA_TASK
 
 	parent_reference: detachable ASANA_ID_NAME assign set_parent_reference
 			-- The parent of this task, or null if this is not a subtask.
