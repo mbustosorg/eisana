@@ -214,5 +214,4 @@ feature -- Status report
 			end
 		end
 
-
 end

@@ -60,5 +60,4 @@ feature -- Factory
 		deferred
 		end
 
-
 end
